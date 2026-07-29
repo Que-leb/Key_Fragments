@@ -201,16 +201,6 @@
       <div class="frag-pill" id="pill3">Fragment III</div>
     </div>
 
-    <div class="riddle-box" id="riddleBox">
-      <div class="q" id="riddleQ"></div>
-      <div class="row">
-        <label for="answer">Your answer</label>
-        <input type="text" id="answer" autocomplete="off">
-      </div>
-      <button id="submitBtn">Submit answer</button>
-      <div class="status-line" id="riddleStatus"></div>
-    </div>
-
     <div class="status-line" id="mainStatus"></div>
 
     <div class="reveal" id="reveal">
@@ -230,12 +220,7 @@ const ROSTER = [
   "Saksham Gupta","David Cardenas","Jessica Conti","Samantha Accordino","Mary Tsiokes","Brandon Banarsi","Stephanie Curry","Donna Cavaretta","Tom Curan","Susan Lattuca","Anthony Florio","Debbie Austin","Peter Meyer"
 ];
 
-/* ---------- riddles — edit these three any time ---------- */
-const RIDDLES = {
-  1: { q: "I am the first thing broken, and the last thing forgotten. What am I?", a: "silence" },
-  2: { q: "I have no body, but I carry a King's name. What am I?", a: "crown" },
-  3: { q: "I burn without fire and mark without ink. What am I?", a: "memory" }
-};
+/* fragments now auto-claim on scan + name selection — no riddle required */
 
 /* ---------- storage: Claude artifact storage if present, else localStorage fallback ---------- */
 const Store = {
@@ -332,10 +317,6 @@ function renderReveal(progress){
 
 async function loadPlayer(name){
   const status = document.getElementById('mainStatus');
-  const riddleBox = document.getElementById('riddleBox');
-  riddleBox.classList.remove('show');
-  document.getElementById('riddleStatus').textContent = '';
-  document.getElementById('answer').value = '';
 
   if (!name){
     currentProgress = [];
@@ -347,58 +328,30 @@ async function loadPlayer(name){
 
   const stored = await Store.get(progressKey(name));
   currentProgress = stored && stored.fragments ? stored.fragments : [];
-  renderWedges(currentProgress);
-  renderReveal(currentProgress);
-
-  document.getElementById('footnote').textContent =
-    currentProgress.length + ' of 3 fragments recovered.';
 
   if (scannedPiece && [1,2,3].includes(scannedPiece)){
     if (currentProgress.includes(scannedPiece)){
       status.textContent = 'Fragment ' + ['I','II','III'][scannedPiece-1] + ' already recovered.';
       status.className = 'status-line ok';
     } else {
-      status.textContent = 'Fragment ' + ['I','II','III'][scannedPiece-1] + ' detected. Answer to claim it.';
-      status.className = 'status-line';
-      document.getElementById('riddleQ').textContent = RIDDLES[scannedPiece].q;
-      riddleBox.classList.add('show');
+      currentProgress.push(scannedPiece);
+      currentProgress.sort();
+      await Store.set(progressKey(name), { fragments: currentProgress });
+      status.textContent = 'Fragment ' + ['I','II','III'][scannedPiece-1] + ' recovered and added to your amulet.';
+      status.className = 'status-line ok';
     }
   } else {
     status.textContent = 'No fragment signal detected on this scan.';
     status.className = 'status-line';
   }
+
+  renderWedges(currentProgress);
+  renderReveal(currentProgress);
+  document.getElementById('footnote').textContent =
+    currentProgress.length + ' of 3 fragments recovered.';
 }
 
 playerSelect.addEventListener('change', ()=> loadPlayer(playerSelect.value));
-
-document.getElementById('submitBtn').addEventListener('click', async ()=>{
-  const name = playerSelect.value;
-  const rstatus = document.getElementById('riddleStatus');
-  if (!name){
-    rstatus.textContent = 'Select your name first.';
-    rstatus.className = 'status-line err';
-    return;
-  }
-  const answer = document.getElementById('answer').value.trim().toLowerCase();
-  const correct = RIDDLES[scannedPiece].a.toLowerCase();
-  if (answer === correct){
-    if (!currentProgress.includes(scannedPiece)){
-      currentProgress.push(scannedPiece);
-      currentProgress.sort();
-      await Store.set(progressKey(name), { fragments: currentProgress });
-    }
-    rstatus.textContent = 'Correct. Fragment recovered.';
-    rstatus.className = 'status-line ok';
-    renderWedges(currentProgress);
-    renderReveal(currentProgress);
-    document.getElementById('footnote').textContent = currentProgress.length + ' of 3 fragments recovered.';
-    document.getElementById('mainStatus').textContent = 'Fragment ' + ['I','II','III'][scannedPiece-1] + ' added to your amulet.';
-    document.getElementById('mainStatus').className = 'status-line ok';
-  } else {
-    rstatus.textContent = 'That is not the answer. Try again.';
-    rstatus.className = 'status-line err';
-  }
-});
 </script>
 
 </body>
