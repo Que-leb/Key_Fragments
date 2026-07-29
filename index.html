@@ -18,6 +18,8 @@
     --amber-dim:#8a6633;
     --teal:#2ee6c8;
     --teal-dim:#1c6e63;
+    --scrap:#c23b3b;
+    --scrap-dim:#6e2424;
     --text:#e8ecef;
     --muted:#6b7680;
     --danger:#ff5a5a;
@@ -78,7 +80,7 @@
     color:var(--muted); margin-bottom:6px;
   }
   .row{ margin-bottom:16px; }
-  select, input[type=text]{
+  select{
     width:100%;
     background:var(--panel-2);
     border:1px solid var(--line);
@@ -88,23 +90,20 @@
     padding:10px 12px;
     appearance:none; -webkit-appearance:none;
   }
-  select:focus, input[type=text]:focus{ outline:none; border-color:var(--teal); }
+  select:focus{ outline:none; border-color:var(--teal); }
 
-  button{
-    width:100%;
-    margin-top:6px;
-    padding:13px;
-    background:var(--panel-2);
+  .claim-box{
     border:1px solid var(--amber-dim);
-    color:var(--amber);
-    font-family:'Share Tech Mono',monospace;
-    font-size:13px; letter-spacing:.14em; text-transform:uppercase;
-    cursor:pointer;
+    background:#1a1410;
+    padding:16px;
+    margin-bottom:20px;
+    display:none;
   }
-  button:hover{ border-color:var(--amber); background:#1a1410; }
-  button:disabled{ opacity:.4; cursor:not-allowed; }
-  button.ghost{ border-color:var(--line); color:var(--muted); }
-  button.ghost:hover{ border-color:var(--line-bright); color:var(--text); background:transparent; }
+  .claim-box.show{ display:block; }
+  .claim-box .msg{
+    font-family:'Share Tech Mono',monospace;
+    font-size:12px; color:var(--amber); line-height:1.6; margin-bottom:12px;
+  }
 
   .status-line{
     font-family:'Share Tech Mono',monospace;
@@ -114,34 +113,33 @@
   .status-line.err{ color:var(--danger); }
   .status-line.ok{ color:var(--teal); }
 
-  /* amulet */
-  .amulet-wrap{ display:flex; justify-content:center; margin:22px 0 10px; }
-  svg#amulet{ width:180px; height:180px; }
-  .wedge{ transition: fill .5s ease, opacity .5s ease; }
-  .wedge.locked{ fill:#1a2023; opacity:0.55; }
-  .wedge.unlocked{ opacity:1; }
-  .wedge-ring{ fill:none; stroke:var(--line-bright); stroke-width:1; }
-  .rune{ font-family:'Share Tech Mono',monospace; font-size:9px; fill:var(--muted); text-anchor:middle; }
+  /* gear-key emblem */
+  .amulet-wrap{ display:flex; justify-content:center; margin:22px 0 6px; }
+  svg#amulet{ width:210px; height:auto; }
+  .section{ transition: opacity .6s ease; }
+  .tooth{ fill:#1a2023; }
+  .ring{ fill:none; stroke:var(--line-bright); stroke-width:1.4; }
+  .hub{ fill:#0e1214; stroke:var(--line-bright); stroke-width:1.4; }
+  .hub-mark{ stroke:var(--muted); stroke-width:1.4; fill:none; }
+  .shaft{ fill:#181d20; stroke:var(--line-bright); stroke-width:1.4; }
+  .detail{ opacity:0; transition: opacity .6s ease; }
+  .section.unlocked .detail{ opacity:1; }
 
-  .frag-list{ display:flex; gap:10px; justify-content:center; margin:6px 0 24px; }
+  .frag-list{ display:flex; gap:8px; justify-content:center; margin:14px 0 24px; }
   .frag-pill{
-    font-family:'Share Tech Mono',monospace; font-size:10px; letter-spacing:.08em;
-    padding:6px 10px; border:1px solid var(--line); color:var(--muted); text-transform:uppercase;
+    flex:1;
+    font-family:'Share Tech Mono',monospace; font-size:10px; letter-spacing:.06em;
+    padding:8px 6px; border:1px solid var(--line); color:var(--muted); text-transform:uppercase;
+    text-align:center;
+  }
+  .frag-pill .house{ display:block; font-size:9px; opacity:.75; margin-bottom:2px; }
+  .frag-pill .claimant{
+    display:block; margin-top:4px; font-size:10px; letter-spacing:.02em;
+    text-transform:none; color:var(--text);
   }
   .frag-pill.have{ border-color:var(--teal-dim); color:var(--teal); }
-
-  .riddle-box{
-    border:1px solid var(--line);
-    background:var(--panel-2);
-    padding:16px;
-    margin-bottom:16px;
-    display:none;
-  }
-  .riddle-box.show{ display:block; }
-  .riddle-box .q{
-    font-family:'Share Tech Mono',monospace;
-    font-size:12px; color:var(--amber); line-height:1.6; margin-bottom:12px;
-  }
+  .frag-pill.have.vanguard{ border-color:var(--amber-dim); color:var(--amber); }
+  .frag-pill.have.scrapkin{ border-color:var(--scrap-dim); color:var(--scrap); }
 
   .reveal{
     display:none;
@@ -176,29 +174,53 @@
 
     <p class="eyebrow">// authentication core — fragment terminal</p>
     <h1>The First <span>Key</span></h1>
-    <p class="sub">Three fragments. One map. Whoever holds all three knows where the Key waits — and who it will answer to.</p>
-
-    <div class="row">
-      <label for="player">Identify yourself</label>
-      <select id="player">
-        <option value="">— select your name —</option>
-      </select>
-    </div>
+    <p class="sub">Three fragments, one for each House. Whoever claims a fragment claims it for good — first scan, first name, locked in for everyone to see.</p>
 
     <div class="amulet-wrap">
-      <svg id="amulet" viewBox="0 0 200 200">
-        <g id="wedge1" class="wedge locked"></g>
-        <g id="wedge2" class="wedge locked"></g>
-        <g id="wedge3" class="wedge locked"></g>
-        <circle class="wedge-ring" cx="100" cy="100" r="88"/>
-        <circle class="wedge-ring" cx="100" cy="100" r="40"/>
+      <svg id="amulet" viewBox="0 0 220 300">
+        <!-- shaft -->
+        <rect class="shaft" x="100" y="185" width="20" height="80" rx="2"/>
+        <rect class="shaft" x="120" y="235" width="14" height="8"/>
+        <rect class="shaft" x="120" y="252" width="10" height="8"/>
+
+        <!-- gear teeth (12 around the ring) -->
+        <g id="teeth"></g>
+
+        <!-- three sections -->
+        <g id="secVanguard" class="section locked"></g>
+        <g id="secSwarm" class="section locked"></g>
+        <g id="secScrapkin" class="section locked"></g>
+
+        <circle class="ring" cx="110" cy="110" r="86"/>
+        <circle class="hub" cx="110" cy="110" r="34"/>
+        <path class="hub-mark" d="M110 96 L110 124 M96 110 L124 110"/>
+        <circle class="hub-mark" cx="110" cy="110" r="10"/>
       </svg>
     </div>
 
     <div class="frag-list">
-      <div class="frag-pill" id="pill1">Fragment I</div>
-      <div class="frag-pill" id="pill2">Fragment II</div>
-      <div class="frag-pill" id="pill3">Fragment III</div>
+      <div class="frag-pill" id="pillVanguard">
+        <span class="house">Vanguard</span>Fragment I
+        <span class="claimant" id="nameVanguard"></span>
+      </div>
+      <div class="frag-pill" id="pillSwarm">
+        <span class="house">Swarm-Courts</span>Fragment II
+        <span class="claimant" id="nameSwarm"></span>
+      </div>
+      <div class="frag-pill" id="pillScrapkin">
+        <span class="house">Scrapkin</span>Fragment III
+        <span class="claimant" id="nameScrapkin"></span>
+      </div>
+    </div>
+
+    <div class="claim-box" id="claimBox">
+      <div class="msg" id="claimMsg"></div>
+      <div class="row">
+        <label for="player">Identify yourself to claim it</label>
+        <select id="player">
+          <option value="">— select your name —</option>
+        </select>
+      </div>
     </div>
 
     <div class="status-line" id="mainStatus"></div>
@@ -220,9 +242,16 @@ const ROSTER = [
   "Saksham Gupta","David Cardenas","Jessica Conti","Samantha Accordino","Mary Tsiokes","Brandon Banarsi","Stephanie Curry","Donna Cavaretta","Tom Curan","Susan Lattuca","Anthony Florio","Debbie Austin","Peter Meyer"
 ];
 
-/* fragments now auto-claim on scan + name selection — no riddle required */
+/* ---------- fragment definitions ---------- */
+/* piece 1 = Vanguard (amber), piece 2 = Swarm-Courts (teal), piece 3 = Scrapkin (red) */
+const FRAGMENTS = {
+  1: { key:'Vanguard',  color:'#ffb454', pillId:'pillVanguard', nameId:'nameVanguard', secId:'secVanguard', cls:'vanguard' },
+  2: { key:'Swarm',     color:'#2ee6c8', pillId:'pillSwarm',    nameId:'nameSwarm',    secId:'secSwarm',    cls:'swarm' },
+  3: { key:'Scrapkin',  color:'#c23b3b', pillId:'pillScrapkin', nameId:'nameScrapkin', secId:'secScrapkin', cls:'scrapkin' }
+};
 
 /* ---------- storage: Claude artifact storage if present, else localStorage fallback ---------- */
+/* NOTE: this is SHARED/global state — once a fragment is claimed, everyone sees it. */
 const Store = {
   async get(key){
     try{
@@ -230,7 +259,7 @@ const Store = {
         const r = await window.storage.get(key, true);
         return r ? JSON.parse(r.value) : null;
       }
-    }catch(e){ /* fall through to localStorage */ }
+    }catch(e){ /* fall through */ }
     const raw = localStorage.getItem(key);
     return raw ? JSON.parse(raw) : null;
   },
@@ -244,33 +273,62 @@ const Store = {
     localStorage.setItem(key, JSON.stringify(value));
   }
 };
+function fragKey(n){ return 'firstkey:fragment:' + n; }
 
-/* ---------- wedge geometry (3 equal pie slices) ---------- */
-function wedgePath(startDeg, endDeg, r){
-  const cx=100, cy=100;
-  const toRad = d => (d-90) * Math.PI/180;
-  const x1 = cx + r*Math.cos(toRad(startDeg));
-  const y1 = cy + r*Math.sin(toRad(startDeg));
-  const x2 = cx + r*Math.cos(toRad(endDeg));
-  const y2 = cy + r*Math.sin(toRad(endDeg));
+/* ---------- build gear teeth ---------- */
+const teethGroup = document.getElementById('teeth');
+for(let i=0;i<12;i++){
+  const angle = (i/12)*360;
+  const rad = (angle-90) * Math.PI/180;
+  const cx=110, cy=110, r=86, tw=10, th=14;
+  const x = cx + r*Math.cos(rad);
+  const y = cy + r*Math.sin(rad);
+  const t = document.createElementNS("http://www.w3.org/2000/svg","rect");
+  t.setAttribute("x", -tw/2); t.setAttribute("y", -th);
+  t.setAttribute("width", tw); t.setAttribute("height", th);
+  t.setAttribute("class","tooth");
+  t.setAttribute("transform", `translate(${x.toFixed(2)},${y.toFixed(2)}) rotate(${angle})`);
+  teethGroup.appendChild(t);
+}
+
+/* ---------- build three sections (120deg wedges between hub and outer ring) ---------- */
+function wedgePath(startDeg, endDeg, rOuter, rInner){
+  const cx=110, cy=110;
+  const toXY = (deg, r) => {
+    const rad = (deg-90)*Math.PI/180;
+    return [cx + r*Math.cos(rad), cy + r*Math.sin(rad)];
+  };
+  const [x1,y1] = toXY(startDeg, rOuter);
+  const [x2,y2] = toXY(endDeg, rOuter);
+  const [x3,y3] = toXY(endDeg, rInner);
+  const [x4,y4] = toXY(startDeg, rInner);
   const large = (endDeg-startDeg) > 180 ? 1 : 0;
-  return `M${cx},${cy} L${x1.toFixed(2)},${y1.toFixed(2)} A${r},${r} 0 ${large} 1 ${x2.toFixed(2)},${y2.toFixed(2)} Z`;
+  return `M${x1.toFixed(2)},${y1.toFixed(2)} A${rOuter},${rOuter} 0 ${large} 1 ${x2.toFixed(2)},${y2.toFixed(2)} L${x3.toFixed(2)},${y3.toFixed(2)} A${rInner},${rInner} 0 ${large} 0 ${x4.toFixed(2)},${y4.toFixed(2)} Z`;
 }
 const wedgeDefs = [
-  {id:'wedge1', start:0,   end:120, symbol:'I',   ux:100, uy:38},
-  {id:'wedge2', start:120, end:240, symbol:'II',  ux:53,  uy:140},
-  {id:'wedge3', start:240, end:360, symbol:'III', ux:147, uy:140}
+  { id:'secVanguard', start:240, end:360 },
+  { id:'secSwarm',    start:0,   end:120 },
+  { id:'secScrapkin', start:120, end:240 }
 ];
 wedgeDefs.forEach(w=>{
   const g = document.getElementById(w.id);
-  const path = document.createElementNS("http://www.w3.org/2000/svg","path");
-  path.setAttribute("d", wedgePath(w.start, w.end, 88));
-  g.appendChild(path);
-  const rune = document.createElementNS("http://www.w3.org/2000/svg","text");
-  rune.setAttribute("x", w.ux); rune.setAttribute("y", w.uy);
-  rune.setAttribute("class","rune");
-  rune.textContent = w.symbol;
-  g.appendChild(rune);
+  const fill = document.createElementNS("http://www.w3.org/2000/svg","path");
+  fill.setAttribute("d", wedgePath(w.start, w.end, 86, 34));
+  fill.setAttribute("class","fill");
+  fill.setAttribute("fill", "#1a2023");
+  g.appendChild(fill);
+  // small decorative rivet, hidden until unlocked
+  const mid = (w.start+w.end)/2;
+  const rad = (mid-90)*Math.PI/180;
+  const rx = 110 + 58*Math.cos(rad), ry = 110 + 58*Math.sin(rad);
+  const detail = document.createElementNS("http://www.w3.org/2000/svg","circle");
+  detail.setAttribute("cx", rx.toFixed(2)); detail.setAttribute("cy", ry.toFixed(2));
+  detail.setAttribute("r", 6);
+  detail.setAttribute("class","detail");
+  detail.setAttribute("fill","#0b0e10");
+  detail.setAttribute("stroke","#000");
+  detail.setAttribute("stroke-width","1");
+  g.appendChild(detail);
 });
 
 /* ---------- populate dropdown ---------- */
@@ -284,74 +342,96 @@ ROSTER.forEach(name=>{
 /* ---------- state ---------- */
 const params = new URLSearchParams(window.location.search);
 const scannedPiece = parseInt(params.get('piece'), 10);
-let currentProgress = [];
+let fragState = { 1:null, 2:null, 3:null }; // null = unclaimed, or {name: "..."}
 
-function progressKey(name){ return 'fragments:' + name; }
-
-function renderWedges(progress){
+function renderAll(){
   [1,2,3].forEach(n=>{
-    const g = document.getElementById('wedge'+n);
-    const pill = document.getElementById('pill'+n);
-    if (progress.includes(n)){
-      g.classList.remove('locked'); g.classList.add('unlocked');
-      g.querySelector('path').setAttribute('fill', n===1?'#8a6633':(n===2?'#1c6e63':'#5a3d8a'));
-      pill.classList.add('have');
+    const f = FRAGMENTS[n];
+    const sec = document.getElementById(f.secId);
+    const pill = document.getElementById(f.pillId);
+    const nameEl = document.getElementById(f.nameId);
+    const claimed = fragState[n];
+
+    if (claimed){
+      sec.classList.remove('locked'); sec.classList.add('unlocked');
+      sec.querySelector('.fill').setAttribute('fill', f.color);
+      pill.classList.add('have', f.cls);
+      nameEl.textContent = claimed.name;
     } else {
-      g.classList.add('locked'); g.classList.remove('unlocked');
-      g.querySelector('path').removeAttribute('fill');
-      pill.classList.remove('have');
+      sec.classList.add('locked'); sec.classList.remove('unlocked');
+      sec.querySelector('.fill').setAttribute('fill', '#1a2023');
+      pill.classList.remove('have','vanguard','swarm','scrapkin');
+      nameEl.textContent = '';
     }
   });
-}
 
-function renderReveal(progress){
+  const claimedCount = [1,2,3].filter(n=>fragState[n]).length;
+  document.getElementById('footnote').textContent = claimedCount + ' of 3 fragments claimed.';
+
   const reveal = document.getElementById('reveal');
-  if (progress.length === 3){
+  if (claimedCount === 3){
     reveal.classList.add('show');
     document.getElementById('revealText').textContent =
-      "The three fragments align. Beneath the ash and the ruined causeways, the map is whole again — the First Key rests within Ember Keep, waiting for whoever holds this amulet complete.";
+      "All three fragments are claimed. Beneath the ash and the ruined causeways, the map is whole again — the First Key rests within Ember Keep, waiting for whoever the three of you decide should hold it.";
   } else {
     reveal.classList.remove('show');
   }
 }
 
-async function loadPlayer(name){
-  const status = document.getElementById('mainStatus');
+async function loadAll(){
+  for (const n of [1,2,3]){
+    fragState[n] = await Store.get(fragKey(n));
+  }
+  renderAll();
 
-  if (!name){
-    currentProgress = [];
-    renderWedges([]); renderReveal([]);
-    status.textContent = '';
-    document.getElementById('footnote').textContent = '';
+  const status = document.getElementById('mainStatus');
+  const claimBox = document.getElementById('claimBox');
+
+  if (scannedPiece && [1,2,3].includes(scannedPiece)){
+    const f = FRAGMENTS[scannedPiece];
+    if (fragState[scannedPiece]){
+      status.textContent = 'Fragment ' + ['I','II','III'][scannedPiece-1] + ' (' + f.key + ') was already claimed by ' + fragState[scannedPiece].name + '.';
+      status.className = 'status-line ok';
+      claimBox.classList.remove('show');
+    } else {
+      claimBox.classList.add('show');
+      document.getElementById('claimMsg').textContent =
+        'Fragment ' + ['I','II','III'][scannedPiece-1] + ' (' + f.key + ') detected and unclaimed. Select your name to claim it — this cannot be undone.';
+    }
+  } else {
+    status.textContent = 'No fragment signal detected on this scan. Showing current progress below.';
+    status.className = 'status-line';
+  }
+}
+
+playerSelect.addEventListener('change', async ()=>{
+  const name = playerSelect.value;
+  if (!name || !scannedPiece) return;
+
+  // re-check in case someone else claimed it moments ago
+  const latest = await Store.get(fragKey(scannedPiece));
+  if (latest){
+    fragState[scannedPiece] = latest;
+    renderAll();
+    document.getElementById('mainStatus').textContent =
+      'Too slow — this fragment was just claimed by ' + latest.name + '.';
+    document.getElementById('mainStatus').className = 'status-line err';
+    document.getElementById('claimBox').classList.remove('show');
     return;
   }
 
-  const stored = await Store.get(progressKey(name));
-  currentProgress = stored && stored.fragments ? stored.fragments : [];
+  const record = { name: name };
+  await Store.set(fragKey(scannedPiece), record);
+  fragState[scannedPiece] = record;
+  renderAll();
 
-  if (scannedPiece && [1,2,3].includes(scannedPiece)){
-    if (currentProgress.includes(scannedPiece)){
-      status.textContent = 'Fragment ' + ['I','II','III'][scannedPiece-1] + ' already recovered.';
-      status.className = 'status-line ok';
-    } else {
-      currentProgress.push(scannedPiece);
-      currentProgress.sort();
-      await Store.set(progressKey(name), { fragments: currentProgress });
-      status.textContent = 'Fragment ' + ['I','II','III'][scannedPiece-1] + ' recovered and added to your amulet.';
-      status.className = 'status-line ok';
-    }
-  } else {
-    status.textContent = 'No fragment signal detected on this scan.';
-    status.className = 'status-line';
-  }
+  document.getElementById('mainStatus').textContent =
+    'Fragment ' + ['I','II','III'][scannedPiece-1] + ' claimed by ' + name + '.';
+  document.getElementById('mainStatus').className = 'status-line ok';
+  document.getElementById('claimBox').classList.remove('show');
+});
 
-  renderWedges(currentProgress);
-  renderReveal(currentProgress);
-  document.getElementById('footnote').textContent =
-    currentProgress.length + ' of 3 fragments recovered.';
-}
-
-playerSelect.addEventListener('change', ()=> loadPlayer(playerSelect.value));
+loadAll();
 </script>
 
 </body>
