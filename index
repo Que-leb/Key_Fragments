@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>The First Key — Fragment Terminal</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b0e10;
+    --panel:#12181b;
+    --panel-2:#161d20;
+    --line:#2a3438;
+    --line-bright:#3d4c52;
+    --amber:#ffb454;
+    --amber-dim:#8a6633;
+    --teal:#2ee6c8;
+    --teal-dim:#1c6e63;
+    --text:#e8ecef;
+    --muted:#6b7680;
+    --danger:#ff5a5a;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    background: radial-gradient(circle at 50% 0%, #14191c 0%, var(--bg) 60%);
+    font-family:'Rajdhani',sans-serif;
+    color:var(--text);
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding:32px 16px 64px;
+  }
+  .frame{
+    width:100%;
+    max-width:460px;
+    position:relative;
+    padding:28px 26px 30px;
+    background:var(--panel);
+    border:1px solid var(--line);
+  }
+  .frame::before, .frame::after,
+  .frame .br-tl, .frame .br-br{
+    content:"";
+    position:absolute;
+    width:16px; height:16px;
+    border-color:var(--amber);
+    border-style:solid;
+  }
+  .frame::before{ top:-1px; left:-1px; border-width:2px 0 0 2px; }
+  .frame::after{ top:-1px; right:-1px; border-width:2px 2px 0 0; }
+  .br-tl{ bottom:-1px; left:-1px; border-width:0 0 2px 2px; }
+  .br-br{ bottom:-1px; right:-1px; border-width:0 2px 2px 0; }
+
+  .eyebrow{
+    font-family:'Share Tech Mono',monospace;
+    font-size:11px; letter-spacing:.18em;
+    color:var(--teal); text-transform:uppercase;
+    margin:0 0 2px;
+  }
+  h1{
+    font-size:22px; font-weight:700; letter-spacing:.03em;
+    margin:0 0 6px; color:var(--text); text-transform:uppercase;
+  }
+  h1 span{ color:var(--amber); }
+  .sub{
+    font-family:'Share Tech Mono',monospace;
+    font-size:12px; color:var(--muted); margin:0 0 22px; line-height:1.6;
+  }
+
+  label{
+    display:block;
+    font-family:'Share Tech Mono',monospace;
+    font-size:11px; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--muted); margin-bottom:6px;
+  }
+  .row{ margin-bottom:16px; }
+  select, input[type=text]{
+    width:100%;
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    color:var(--text);
+    font-family:'Share Tech Mono',monospace;
+    font-size:14px;
+    padding:10px 12px;
+    appearance:none; -webkit-appearance:none;
+  }
+  select:focus, input[type=text]:focus{ outline:none; border-color:var(--teal); }
+
+  button{
+    width:100%;
+    margin-top:6px;
+    padding:13px;
+    background:var(--panel-2);
+    border:1px solid var(--amber-dim);
+    color:var(--amber);
+    font-family:'Share Tech Mono',monospace;
+    font-size:13px; letter-spacing:.14em; text-transform:uppercase;
+    cursor:pointer;
+  }
+  button:hover{ border-color:var(--amber); background:#1a1410; }
+  button:disabled{ opacity:.4; cursor:not-allowed; }
+  button.ghost{ border-color:var(--line); color:var(--muted); }
+  button.ghost:hover{ border-color:var(--line-bright); color:var(--text); background:transparent; }
+
+  .status-line{
+    font-family:'Share Tech Mono',monospace;
+    font-size:11px; color:var(--muted);
+    margin-top:14px; text-align:center;
+  }
+  .status-line.err{ color:var(--danger); }
+  .status-line.ok{ color:var(--teal); }
+
+  /* amulet */
+  .amulet-wrap{ display:flex; justify-content:center; margin:22px 0 10px; }
+  svg#amulet{ width:180px; height:180px; }
+  .wedge{ transition: fill .5s ease, opacity .5s ease; }
+  .wedge.locked{ fill:#1a2023; opacity:0.55; }
+  .wedge.unlocked{ opacity:1; }
+  .wedge-ring{ fill:none; stroke:var(--line-bright); stroke-width:1; }
+  .rune{ font-family:'Share Tech Mono',monospace; font-size:9px; fill:var(--muted); text-anchor:middle; }
+
+  .frag-list{ display:flex; gap:10px; justify-content:center; margin:6px 0 24px; }
+  .frag-pill{
+    font-family:'Share Tech Mono',monospace; font-size:10px; letter-spacing:.08em;
+    padding:6px 10px; border:1px solid var(--line); color:var(--muted); text-transform:uppercase;
+  }
+  .frag-pill.have{ border-color:var(--teal-dim); color:var(--teal); }
+
+  .riddle-box{
+    border:1px solid var(--line);
+    background:var(--panel-2);
+    padding:16px;
+    margin-bottom:16px;
+    display:none;
+  }
+  .riddle-box.show{ display:block; }
+  .riddle-box .q{
+    font-family:'Share Tech Mono',monospace;
+    font-size:12px; color:var(--amber); line-height:1.6; margin-bottom:12px;
+  }
+
+  .reveal{
+    display:none;
+    margin-top:22px;
+    border:1px solid var(--teal-dim);
+    background:#0f1a18;
+    padding:18px;
+    text-align:center;
+  }
+  .reveal.show{ display:block; }
+  .reveal .loc{
+    font-family:'Share Tech Mono',monospace;
+    font-size:20px; color:var(--teal); letter-spacing:.08em; margin:6px 0 10px;
+  }
+  .reveal p{
+    font-family:'Share Tech Mono',monospace;
+    font-size:12px; color:var(--muted); line-height:1.7; margin:0;
+  }
+
+  .footnote{
+    margin-top:20px;
+    font-family:'Share Tech Mono',monospace;
+    font-size:10px; color:var(--muted); text-align:center; line-height:1.6;
+  }
+</style>
+</head>
+<body>
+
+  <div class="frame">
+    <div class="br-tl"></div>
+    <div class="br-br"></div>
+
+    <p class="eyebrow">// authentication core — fragment terminal</p>
+    <h1>The First <span>Key</span></h1>
+    <p class="sub">Three fragments. One map. Whoever holds all three knows where the Key waits — and who it will answer to.</p>
+
+    <div class="row">
+      <label for="player">Identify yourself</label>
+      <select id="player">
+        <option value="">— select your name —</option>
+      </select>
+    </div>
+
+    <div class="amulet-wrap">
+      <svg id="amulet" viewBox="0 0 200 200">
+        <g id="wedge1" class="wedge locked"></g>
+        <g id="wedge2" class="wedge locked"></g>
+        <g id="wedge3" class="wedge locked"></g>
+        <circle class="wedge-ring" cx="100" cy="100" r="88"/>
+        <circle class="wedge-ring" cx="100" cy="100" r="40"/>
+      </svg>
+    </div>
+
+    <div class="frag-list">
+      <div class="frag-pill" id="pill1">Fragment I</div>
+      <div class="frag-pill" id="pill2">Fragment II</div>
+      <div class="frag-pill" id="pill3">Fragment III</div>
+    </div>
+
+    <div class="riddle-box" id="riddleBox">
+      <div class="q" id="riddleQ"></div>
+      <div class="row">
+        <label for="answer">Your answer</label>
+        <input type="text" id="answer" autocomplete="off">
+      </div>
+      <button id="submitBtn">Submit answer</button>
+      <div class="status-line" id="riddleStatus"></div>
+    </div>
+
+    <div class="status-line" id="mainStatus"></div>
+
+    <div class="reveal" id="reveal">
+      <p class="eyebrow" style="text-align:center;">// all fragments aligned</p>
+      <div class="loc" id="revealLoc">EMBER KEEP</div>
+      <p id="revealText"></p>
+    </div>
+
+    <p class="footnote" id="footnote"></p>
+  </div>
+
+<script>
+/* ---------- roster ---------- */
+const ROSTER = [
+  "Onalisa Santos","Dipanshu Gupta","Bianca Ludewig","Alexandra Rebuquiao","Dean Hartofilis","Ariana Perry","Kristina Ifkovits",
+  "Sofia Sferrazza","Joe Sottile","Shanny Salcedo","Melissa Reyes","Manan Vora","Christos Sarris","Nancy Cook","Geethika Namburu","Ken Clarke","Alexandra Moore","Mia Bravo","Ezgi Bilaloglu",
+  "Saksham Gupta","David Cardenas","Jessica Conti","Samantha Accordino","Mary Tsiokes","Brandon Banarsi","Stephanie Curry","Donna Cavaretta","Tom Curan","Susan Lattuca","Anthony Florio","Debbie Austin","Peter Meyer"
+];
+
+/* ---------- riddles — edit these three any time ---------- */
+const RIDDLES = {
+  1: { q: "I am the first thing broken, and the last thing forgotten. What am I?", a: "silence" },
+  2: { q: "I have no body, but I carry a King's name. What am I?", a: "crown" },
+  3: { q: "I burn without fire and mark without ink. What am I?", a: "memory" }
+};
+
+/* ---------- storage: Claude artifact storage if present, else localStorage fallback ---------- */
+const Store = {
+  async get(key){
+    try{
+      if (window.storage && window.storage.get){
+        const r = await window.storage.get(key, true);
+        return r ? JSON.parse(r.value) : null;
+      }
+    }catch(e){ /* fall through to localStorage */ }
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : null;
+  },
+  async set(key, value){
+    try{
+      if (window.storage && window.storage.set){
+        await window.storage.set(key, JSON.stringify(value), true);
+        return;
+      }
+    }catch(e){ /* fall through */ }
+    localStorage.setItem(key, JSON.stringify(value));
+  }
+};
+
+/* ---------- wedge geometry (3 equal pie slices) ---------- */
+function wedgePath(startDeg, endDeg, r){
+  const cx=100, cy=100;
+  const toRad = d => (d-90) * Math.PI/180;
+  const x1 = cx + r*Math.cos(toRad(startDeg));
+  const y1 = cy + r*Math.sin(toRad(startDeg));
+  const x2 = cx + r*Math.cos(toRad(endDeg));
+  const y2 = cy + r*Math.sin(toRad(endDeg));
+  const large = (endDeg-startDeg) > 180 ? 1 : 0;
+  return `M${cx},${cy} L${x1.toFixed(2)},${y1.toFixed(2)} A${r},${r} 0 ${large} 1 ${x2.toFixed(2)},${y2.toFixed(2)} Z`;
+}
+const wedgeDefs = [
+  {id:'wedge1', start:0,   end:120, symbol:'I',   ux:100, uy:38},
+  {id:'wedge2', start:120, end:240, symbol:'II',  ux:53,  uy:140},
+  {id:'wedge3', start:240, end:360, symbol:'III', ux:147, uy:140}
+];
+wedgeDefs.forEach(w=>{
+  const g = document.getElementById(w.id);
+  const path = document.createElementNS("http://www.w3.org/2000/svg","path");
+  path.setAttribute("d", wedgePath(w.start, w.end, 88));
+  g.appendChild(path);
+  const rune = document.createElementNS("http://www.w3.org/2000/svg","text");
+  rune.setAttribute("x", w.ux); rune.setAttribute("y", w.uy);
+  rune.setAttribute("class","rune");
+  rune.textContent = w.symbol;
+  g.appendChild(rune);
+});
+
+/* ---------- populate dropdown ---------- */
+const playerSelect = document.getElementById('player');
+ROSTER.forEach(name=>{
+  const opt = document.createElement('option');
+  opt.value = name; opt.textContent = name;
+  playerSelect.appendChild(opt);
+});
+
+/* ---------- state ---------- */
+const params = new URLSearchParams(window.location.search);
+const scannedPiece = parseInt(params.get('piece'), 10);
+let currentProgress = [];
+
+function progressKey(name){ return 'fragments:' + name; }
+
+function renderWedges(progress){
+  [1,2,3].forEach(n=>{
+    const g = document.getElementById('wedge'+n);
+    const pill = document.getElementById('pill'+n);
+    if (progress.includes(n)){
+      g.classList.remove('locked'); g.classList.add('unlocked');
+      g.querySelector('path').setAttribute('fill', n===1?'#8a6633':(n===2?'#1c6e63':'#5a3d8a'));
+      pill.classList.add('have');
+    } else {
+      g.classList.add('locked'); g.classList.remove('unlocked');
+      g.querySelector('path').removeAttribute('fill');
+      pill.classList.remove('have');
+    }
+  });
+}
+
+function renderReveal(progress){
+  const reveal = document.getElementById('reveal');
+  if (progress.length === 3){
+    reveal.classList.add('show');
+    document.getElementById('revealText').textContent =
+      "The three fragments align. Beneath the ash and the ruined causeways, the map is whole again — the First Key rests within Ember Keep, waiting for whoever holds this amulet complete.";
+  } else {
+    reveal.classList.remove('show');
+  }
+}
+
+async function loadPlayer(name){
+  const status = document.getElementById('mainStatus');
+  const riddleBox = document.getElementById('riddleBox');
+  riddleBox.classList.remove('show');
+  document.getElementById('riddleStatus').textContent = '';
+  document.getElementById('answer').value = '';
+
+  if (!name){
+    currentProgress = [];
+    renderWedges([]); renderReveal([]);
+    status.textContent = '';
+    document.getElementById('footnote').textContent = '';
+    return;
+  }
+
+  const stored = await Store.get(progressKey(name));
+  currentProgress = stored && stored.fragments ? stored.fragments : [];
+  renderWedges(currentProgress);
+  renderReveal(currentProgress);
+
+  document.getElementById('footnote').textContent =
+    currentProgress.length + ' of 3 fragments recovered.';
+
+  if (scannedPiece && [1,2,3].includes(scannedPiece)){
+    if (currentProgress.includes(scannedPiece)){
+      status.textContent = 'Fragment ' + ['I','II','III'][scannedPiece-1] + ' already recovered.';
+      status.className = 'status-line ok';
+    } else {
+      status.textContent = 'Fragment ' + ['I','II','III'][scannedPiece-1] + ' detected. Answer to claim it.';
+      status.className = 'status-line';
+      document.getElementById('riddleQ').textContent = RIDDLES[scannedPiece].q;
+      riddleBox.classList.add('show');
+    }
+  } else {
+    status.textContent = 'No fragment signal detected on this scan.';
+    status.className = 'status-line';
+  }
+}
+
+playerSelect.addEventListener('change', ()=> loadPlayer(playerSelect.value));
+
+document.getElementById('submitBtn').addEventListener('click', async ()=>{
+  const name = playerSelect.value;
+  const rstatus = document.getElementById('riddleStatus');
+  if (!name){
+    rstatus.textContent = 'Select your name first.';
+    rstatus.className = 'status-line err';
+    return;
+  }
+  const answer = document.getElementById('answer').value.trim().toLowerCase();
+  const correct = RIDDLES[scannedPiece].a.toLowerCase();
+  if (answer === correct){
+    if (!currentProgress.includes(scannedPiece)){
+      currentProgress.push(scannedPiece);
+      currentProgress.sort();
+      await Store.set(progressKey(name), { fragments: currentProgress });
+    }
+    rstatus.textContent = 'Correct. Fragment recovered.';
+    rstatus.className = 'status-line ok';
+    renderWedges(currentProgress);
+    renderReveal(currentProgress);
+    document.getElementById('footnote').textContent = currentProgress.length + ' of 3 fragments recovered.';
+    document.getElementById('mainStatus').textContent = 'Fragment ' + ['I','II','III'][scannedPiece-1] + ' added to your amulet.';
+    document.getElementById('mainStatus').className = 'status-line ok';
+  } else {
+    rstatus.textContent = 'That is not the answer. Try again.';
+    rstatus.className = 'status-line err';
+  }
+});
+</script>
+
+</body>
+</html>
